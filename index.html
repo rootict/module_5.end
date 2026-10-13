@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 05.4 - Prompt Libraries, Verification & Data Safety (Light Theme)</title>
+    <style>
+        /* ======================================================= */
+        /* CORE STYLES (Light Blue Theme & Enhanced Typography)    */
+        /* ======================================================= */
+        :root { 
+            --bg-color: #e0f2fe; /* Light Blue Background */
+            --primary: #0ea5e9; /* Sky Blue for primary elements */
+            --accent: #e11d48; /* Rose for weak/alerts */
+            --whatsapp: #16a34a; /* Green for strong/success */
+            --text-main: #0f172a; /* Dark slate for main text */
+            --text-muted: #475569; /* Slate for muted text */
+            --panel-bg: rgba(255, 255, 255, 0.95); /* White panels */
+            --gold: #d97706; /* Amber for context */
+            --cyan: #0891b2; /* Cyan for tech/code */
+            --purple: #7e22ce; /* Purple for professional emails */
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+        html { font-size: 16px; } 
+        @media (min-width: 1920px) { html { font-size: 20px; } } 
+        @media (min-width: 2560px) { html { font-size: 26px; } } 
+        @media (min-width: 3800px) { html { font-size: 36px; } }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); overflow: hidden; width: 100vw; height: 100vh; background-image: radial-gradient(circle at center, #f0f9ff 0%, #e0f2fe 100%); }
+        #presentation { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .slide { position: absolute; width: 94%; max-width: 1650px; height: 88%; opacity: 0; transform: scale(0.95) translateY(20px); transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); display: flex; flex-direction: column; justify-content: center; pointer-events: none; overflow-y: auto; scrollbar-width: none; }
+        .slide::-webkit-scrollbar { display: none; } 
+        .slide.active { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+        
+        h1 { font-size: 3.8rem; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 4px 15px rgba(14, 165, 233, 0.2); font-weight: 800; line-height: 1.1;}
+        h2 { font-size: 2.2rem; margin-bottom: 25px; color: var(--text-muted); font-weight: 600; line-height: 1.3;} 
+        p, li { font-size: 1.4rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 15px; }
+        .module-tag { display:inline-block; border: 1px solid var(--cyan); padding: 6px 20px; border-radius: 30px; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 15px; font-size: 1rem; align-self: flex-start; background: rgba(8, 145, 178, 0.1); color: var(--cyan); text-transform: uppercase;}
+
+        .landscape-box { position: relative; width: 100%; height: 50vh; min-height: 400px; max-height: 650px; background: var(--panel-bg); border-radius: 20px; border: 1px solid #cbd5e1; margin-top: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: visible; flex-shrink: 0; }
+        .desc-box { margin-top: 25px; background: rgba(255, 255, 255, 0.95); border-left: 6px solid var(--primary); padding: 18px 30px; border-radius: 12px; height: auto; font-size: 1.4rem; line-height: 1.6; color: var(--text-main); opacity: 0; transition: opacity 0.5s; z-index: 50; position: relative; overflow: visible; display: block; box-shadow: 0 10px 20px rgba(0,0,0,0.05); font-weight: 600;}
+        
+        /* SLIDE 1: Prompt Libraries */
+        .lib-container { display: flex; width: 100%; height: 100%; padding: 25px; gap: 25px; }
+        .lib-menu { width: 35%; background: rgba(241, 245, 249, 0.8); border: 2px solid #cbd5e1; border-radius: 15px; display: flex; flex-direction: column; padding: 20px; gap: 15px; }
+        .lib-header { color: var(--primary); font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;}
+        .lib-item { background: white; border: 1px solid #cbd5e1; padding: 18px; border-radius: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 18px; opacity: 0.6; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .lib-item.active-item { opacity: 1; border-color: var(--primary); background: rgba(14, 165, 233, 0.05); transform: translateX(10px); box-shadow: 0 10px 15px rgba(14, 165, 233, 0.1); }
+        .lib-icon { font-size: 2.2rem; }
+        .lib-text h4 { color: var(--text-main); margin-bottom: 5px; font-weight: 800; font-size: 1.25rem; } 
+        .lib-text p { font-size: 1.05rem; color: var(--text-muted); margin: 0; line-height: 1.3; font-weight: 500;}
+        
+        .lib-workspace { width: 65%; background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 25px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.5s; }
+        .lib-workspace.active-ws { border-style: solid; border-color: var(--primary); box-shadow: 0 15px 35px rgba(14, 165, 233, 0.1); }
+        .ws-prompt-area { 
+            flex: 1; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            padding: 25px; 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            line-height: 1.7; 
+            opacity: 0; 
+            transform: translateY(20px); 
+            transition: all 0.5s; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-start; /* FIX: Changed from center to prevent clipping */
+            overflow-y: auto; /* FIX: Added to allow scrolling if text is too long */
+            font-weight: 500;
+        }
+        .ws-prompt-area::-webkit-scrollbar { display: none; } /* Hide scrollbar for clean look */
+        .ws-prompt-area { -ms-overflow-style: none; scrollbar-width: none; }
+        .ws-prompt-area.show { opacity: 1; transform: translateY(0); }
+        
+        /* SLIDE 2: Verification */
+        .ver-container { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; padding: 20px; position: relative; }
+        .ver-output { width: 75%; background: white; border: 2px solid #cbd5e1; border-radius: 20px; padding: 40px; font-size: 1.6rem; line-height: 1.8; color: var(--text-main); text-align: center; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.08); font-weight: 500; }
+        .ver-fact { font-weight: bold; position: relative; transition: all 0.5s; display: inline-block; padding: 0 5px;}
+        .ver-fact.fake { color: var(--accent); text-decoration: underline wavy var(--accent); background: rgba(225, 29, 72, 0.05); border-radius: 4px; }
+        .ver-fact.verified { color: var(--whatsapp); text-shadow: 0 0 10px rgba(22, 163, 74, 0.2); background: rgba(22, 163, 74, 0.05); border-radius: 4px; }
+        
+        .scanner-beam { position: absolute; top: -10%; left: -20%; width: 80px; height: 120%; background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.4), transparent); filter: blur(8px); transform: skewX(-20deg); opacity: 0; z-index: 10; pointer-events: none; }
+        .scanner-beam.scan { opacity: 1; animation: sweep 2.5s ease-in-out forwards; }
+        @keyframes sweep { 0% { left: -20%; } 100% { left: 120%; } }
+
+        .ver-badge { position: absolute; top: -40px; right: -40px; background: var(--accent); color: white; font-weight: 800; padding: 12px 25px; border-radius: 30px; transform: scale(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 1.2rem; box-shadow: 0 8px 20px rgba(225, 29, 72, 0.4); z-index: 20; letter-spacing: 1px;}
+        .ver-badge.show { transform: scale(1); top: 20px; right: 20px; }
+        .ver-badge.safe { background: var(--whatsapp); box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4); }
+
+        /* SLIDE 3: Safe Data Handling */
+        .safe-net { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: space-between; padding: 0 80px; }
+        .safe-node { display: flex; flex-direction: column; align-items: center; z-index: 10; width: 150px; }
+        .sn-icon { font-size: 4rem; width: 100px; height: 100px; background: white; border: 3px solid #cbd5e1; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.3s;}
+        .sn-label { margin-top: 20px; font-weight: 800; color: var(--text-main); text-align: center; font-size: 1.2rem; }
+        
+        #node-fw .sn-icon { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px rgba(225, 29, 72, 0.2); }
+        #node-fw.active-fw .sn-icon { background: rgba(225, 29, 72, 0.1); box-shadow: 0 0 35px rgba(225, 29, 72, 0.5); animation: shieldPulse 1s infinite alternate; }
+        @keyframes shieldPulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); text-shadow: 0 0 15px var(--accent); } }
+
+        .data-pipe { position: absolute; height: 6px; background: #e2e8f0; top: 46%; left: 140px; right: 140px; transform: translateY(-50%); z-index: 1; border-radius: 3px;}
+        .safe-packet { position: absolute; top: 46%; left: 150px; transform: translateY(-50%); padding: 15px 25px; border-radius: 12px; font-family: monospace; font-size: 1.3rem; font-weight: bold; color: var(--text-main); background: white; border: 3px solid var(--accent); box-shadow: 0 10px 25px rgba(225, 29, 72, 0.2); opacity: 0; z-index: 20; transition: left 1.5s linear, opacity 0.3s; white-space: nowrap; }
+        .safe-packet.move-1 { opacity: 1; left: 50%; transform: translate(-50%, -50%); }
+        .safe-packet.anonymized { border-color: var(--whatsapp); box-shadow: 0 10px 25px rgba(22, 163, 74, 0.2); color: var(--whatsapp); }
+        .safe-packet.move-2 { left: 85%; transform: translate(-100%, -50%); opacity: 0; }
+
+        /* SLIDE 4: Checklists/Pillars */
+        .prompt-pillar-container { display: flex; justify-content: space-around; align-items: stretch; height: 100%; flex: 2; padding: 20px; gap: 20px; }
+        .p-pillar { flex: 1; background: white; border: 2px dashed #cbd5e1; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 25px 20px; opacity: 0; transform: translateY(30px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .p-pillar.show { opacity: 1; transform: translateY(0); box-shadow: 0 15px 35px rgba(0,0,0,0.08); border-style: solid; }
+        .p-icon { font-size: 3.5rem; margin-bottom: 20px; background: #f8fafc; width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.05);}
+        .p-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-align: center;}
+        .p-desc { font-size: 1.15rem; color: var(--text-muted); text-align: center; line-height: 1.6; font-weight: 500;}
+        
+        #chk-1.show { border-color: var(--primary); background: rgba(14, 165, 233, 0.03); }
+        #chk-1 .p-icon { color: var(--primary); }
+        #chk-2.show { border-color: var(--gold); background: rgba(217, 119, 6, 0.03); }
+        #chk-3.show { border-color: var(--whatsapp); background: rgba(22, 163, 74, 0.03); }
+
+        /* RESPONSIVE SETTINGS */
+        @media (max-width: 950px) {
+            .landscape-box { min-height: 350px; height: auto; }
+            .desc-box { font-size: 1.1rem; padding: 15px; }
+            .lib-container { flex-direction: column; padding: 15px; gap: 15px;}
+            .lib-menu { width: 100%; flex-direction: row; overflow-x: auto; padding: 10px; gap: 10px;}
+            .lib-header { display: none; }
+            .lib-item { padding: 10px; flex-shrink: 0; width: 80%; }
+            .lib-workspace { width: 100%; min-height: 200px; padding: 15px;}
+            .ws-prompt-area { font-size: 1rem; padding: 15px; }
+            .ver-output { width: 95%; font-size: 1.2rem; padding: 25px; }
+            .ver-badge { font-size: 1rem; padding: 8px 15px; top: 10px; right: 10px;}
+            .safe-net { padding: 0 10px; }
+            .sn-icon { width: 70px; height: 70px; font-size: 2.5rem; }
+            .sn-label { font-size: 0.9rem; }
+            .safe-packet { font-size: 0.9rem; padding: 10px 15px; left: 80px;}
+            .p-pillar { width: 100%; margin-bottom: 15px; min-height: 150px; padding: 15px;}
+            .prompt-pillar-container { flex-direction: column; align-items: center; overflow-y: auto; padding-top: 10px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div id="presentation" onclick="nextSlide()">
+        
+        <!-- SLIDE 0: TITLE SLIDE -->
+        <section class="slide active" id="slide-0" style="align-items: center; text-align: center; justify-content: center;">
+            <div style="max-width: 1050px; width: 100%;">
+                <h2 style="color: var(--accent); font-size: 1.6rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700;">Foundation Diploma in ICT</h2>
+                <h1 style="font-size: 4.5rem; margin-bottom: 5px; color: var(--primary);">Module 05</h1>
+                <p style="font-size: 2.4rem; color: var(--text-main); font-weight: 800; margin-bottom: 30px; letter-spacing: -0.5px;">Prompt Engineering & Working with AI</p>
+
+                <div id="module-list" style="background: white; border: 1px solid #cbd5e1; border-radius: 20px; padding: 25px 35px; text-align: left; margin-bottom: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="font-size: 1.35rem; margin-bottom: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 18px;"><span style="background: #f1f5f9; color: var(--text-muted); padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; border: 1px solid #e2e8f0;">5.1</span> Prompt anatomy: task, context, constraints and output format</li>
+                        <li style="font-size: 1.35rem; margin-bottom: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 18px;"><span style="background: #f1f5f9; color: var(--text-muted); padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; border: 1px solid #e2e8f0;">5.2</span> Role prompting, examples and iterative refinement</li>
+                        <li style="font-size: 1.35rem; margin-bottom: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 18px;"><span style="background: #f1f5f9; color: var(--text-muted); padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; border: 1px solid #e2e8f0;">5.3</span> Comparing weak vs strong prompts</li>
+                        
+                        <!-- HIGHLIGHTED 5.4 -->
+                        <li style="font-size: 1.5rem; margin-bottom: 0; color: var(--text-main); display: flex; align-items: center; gap: 18px; background: rgba(22, 163, 74, 0.05); padding: 12px 15px; border-radius: 12px; border: 2px solid var(--whatsapp); transform: scale(1.02); box-shadow: 0 5px 15px rgba(22, 163, 74, 0.1);"><span style="background: var(--whatsapp); color: white; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; box-shadow: 0 0 10px rgba(22, 163, 74, 0.4);">5.4</span> <b style="color:var(--text-main);">Prompt libraries, verification and safe data handling</b></li>
+                    </ul>
+                </div>
+
+                <div id="profile-box" style="display: inline-flex; align-items: center; justify-content: center; gap: 25px; background: white; padding: 18px 40px; border-radius: 20px; border-left: 6px solid var(--whatsapp); text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.05); position: relative;">
+                    <div style="width: 85px; height: 85px; border-radius: 15px; border: 3px solid var(--whatsapp); flex-shrink: 0; background-color: #f1f5f9; background-image: url('./image_8ca44b.png'); background-size: cover; background-position: center; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.2);"></div>
+                    <div>
+                        <p style="font-size: 0.95rem; color: var(--whatsapp); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Lecturer</p>
+                        <h3 style="font-size: 1.8rem; color: var(--text-main); margin-bottom: 5px; font-weight: 800;">Himanka Dodangoda</h3>
+                        <p style="font-size: 1.15rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">MSc in AI (Reading) | MBA | BSc (Hons) in Software Eng. (UK)</p>
+                        <p style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0; font-weight: 700;">SLQF 10 | SCQF 7, 8, 9</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 1: Prompt Libraries -->
+        <section class="slide" id="slide-1">
+            <div class="module-tag" style="background:rgba(14, 165, 233, 0.1); border-color: var(--primary); color: var(--primary);">5.4 EFFICIENCY</div>
+            <h1 style="color: var(--primary);">Prompt Libraries</h1>
+            <h2 style="color: var(--text-main);">Don't type it from scratch every time. Save your master prompts!</h2>
+            
+            <div class="landscape-box" style="border-color: var(--primary);">
+                <div class="lib-container">
+                    
+                    <div class="lib-menu">
+                        <div class="lib-header"><span>🗂️ My Saved Prompts</span></div>
+                        <div class="lib-item" id="lib-1">
+                            <div class="lib-icon">✉️</div>
+                            <div class="lib-text"><h4>Angry Client Reply</h4><p>De-escalates angry emails.</p></div>
+                        </div>
+                        <div class="lib-item" id="lib-2">
+                            <div class="lib-icon">🐛</div>
+                            <div class="lib-text"><h4>Code Debugger</h4><p>Finds syntax errors instantly.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="lib-workspace" id="lib-ws">
+                        <div style="position:absolute; top:15px; right:20px; color:var(--text-muted); font-weight:800; text-transform: uppercase; font-size: 0.9rem;">Workspace</div>
+                        <div class="ws-prompt-area" id="ws-text">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="desc-box" id="lib-desc" style="border-left-color: var(--primary);">Click to load a saved prompt from the library...</div>
+        </section>
+
+        <!-- SLIDE 2: Verifying Outputs (Hallucinations) -->
+        <section class="slide" id="slide-2">
+            <div class="module-tag" style="background:rgba(217, 119, 6, 0.1); border-color: var(--gold); color: var(--gold);">5.4 VERIFICATION</div>
+            <h1 style="color: var(--gold);">Trust, but Verify!</h1>
+            <h2 style="color: var(--text-main);">AI hallucinates. Always double-check facts and logic.</h2>
+            
+            <div class="landscape-box" style="border-color: var(--gold);">
+                <div class="ver-container">
+                    
+                    <div class="ver-output">
+                        <div class="scanner-beam" id="v-scan"></div>
+                        <div class="ver-badge" id="v-badge">🚨 FACT CHECK ALERT</div>
+                        
+                        "The Sydney Opera House is a world-famous building located in <span class="ver-fact" id="v-fact">Sydney, which is the capital city of Australia.</span> It was opened in 1973."
+                    </div>
+
+                </div>
+            </div>
+            <div class="desc-box" id="ver-desc" style="border-left-color: var(--gold);">Click to run the Verification Scanner on the AI's output...</div>
+        </section>
+
+        <!-- SLIDE 3: Safe Data Handling -->
+        <section class="slide" id="slide-3">
+            <div class="module-tag" style="background:rgba(225, 29, 72, 0.1); border-color: var(--accent); color: var(--accent);">5.4 DATA SAFETY</div>
+            <h1 style="color: var(--accent);">Handling Data Safely</h1>
+            <h2 style="color: var(--text-main);">Never send PII, Passwords, or Financial data to public LLMs.</h2>
+            
+            <div class="landscape-box" style="border-color: var(--accent);">
+                <div class="safe-net">
+                    <div class="data-pipe"></div>
+                    
+                    <!-- Nodes -->
+                    <div class="safe-node">
+                        <div class="sn-icon">👤</div>
+                        <div class="sn-label">You (User)</div>
+                    </div>
+
+                    <div class="safe-node" id="node-fw">
+                        <div class="sn-icon">🛡️</div>
+                        <div class="sn-label" style="color:var(--accent)">Privacy Firewall</div>
+                    </div>
+
+                    <div class="safe-node">
+                        <div class="sn-icon">🧠</div>
+                        <div class="sn-label">Public AI Model</div>
+                    </div>
+
+                    <!-- Packet -->
+                    <div class="safe-packet" id="s-packet">
+                        Prompt: User pass is 'Admin@123'
+                    </div>
+
+                </div>
+            </div>
+            <div class="desc-box" id="safe-desc" style="border-left-color: var(--accent);">Click to send a prompt containing sensitive data...</div>
+        </section>
+
+        <!-- SLIDE 4: The Summary Pillars -->
+        <section class="slide" id="slide-4">
+            <div class="module-tag" style="background:rgba(22, 163, 74, 0.1); border-color: var(--whatsapp); color: var(--whatsapp);">MODULE 5.4 SUMMARY</div>
+            <h1 style="color: var(--whatsapp);">The Final Workflow</h1>
+            <h2 style="color: var(--text-main);">How a professional works with AI every day.</h2>
+            
+            <div class="landscape-box" style="border-color: var(--whatsapp); display: flex; align-items: center; justify-content: center; flex-direction: column; background: transparent; border: none; box-shadow: none;">
+                
+                <div class="prompt-pillar-container" style="align-items: stretch;">
+                    
+                    <div class="p-pillar" id="chk-1">
+                        <div class="p-icon" style="color:var(--primary);">💾</div>
+                        <div class="p-title" style="color:var(--primary)">1. Save</div>
+                        <div class="p-desc">Use <b>Prompt Libraries</b> (like Notion or Word) to save complex, proven templates to save time.</div>
+                    </div>
+
+                    <div class="p-pillar" id="chk-2">
+                        <div class="p-icon" style="color:var(--gold);">🔍</div>
+                        <div class="p-title" style="color:var(--gold)">2. Verify</div>
+                        <div class="p-desc">Don't blindly copy-paste. Spot <b>Hallucinations</b> by double-checking facts, math, and code.</div>
+                    </div>
+
+                    <div class="p-pillar" id="chk-3">
+                        <div class="p-icon" style="color:var(--whatsapp);">🔒</div>
+                        <div class="p-title" style="color:var(--whatsapp)">3. Protect</div>
+                        <div class="p-desc">Use placeholder tags like <i>[CLIENT_NAME]</i>. Never share real <b>Sensitive Data</b> with AI models.</div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="desc-box" id="sum-desc" style="border-left-color: var(--whatsapp);">Click to reveal the final workflow pillars...</div>
+        </section>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        let isAnimating = false;
+        const sleepGlobal = ms => new Promise(r => setTimeout(r, ms));
+
+        // DATA ARRAYS
+        let libStep = -1;
+        const libData = [
+            { txt: "<b style='color:var(--primary);'>Library Loading:</b> You don't write the 4 pillars (Task, Context, Constraint, Format) every time. You save the skeleton and just fill in the blanks!" },
+            { txt: "<b style='color:var(--primary);'>Switching Contexts:</b> Need to debug code? Click the Code Debugger prompt. This is how pros scale their productivity." }
+        ];
+
+        let verStep = -1;
+        const verData = [
+            { txt: "<b style='color:var(--accent);'>Hallucination Detected!</b> The AI sounded very confident, but Sydney is NOT the capital of Australia (Canberra is). AI models predict text, they don't 'know' facts." },
+            { txt: "<b style='color:var(--whatsapp);'>Verification Passed:</b> Always read the output critically. If it contains dates, names, locations, or code logic—verify it independently!" }
+        ];
+
+        let safeStep = -1;
+        const safeData = [
+            { txt: "<b style='color:var(--accent);'>Danger!</b> The user tried to send a real password into the prompt. Public AIs might use your chats for future training." },
+            { txt: "<b style='color:var(--whatsapp);'>Redaction Successful:</b> The Firewall intercepted it. Always anonymize data (e.g., use 'User pass is [REDACTED]') before it leaves your computer." }
+        ];
+
+        let sumStep = -1;
+        const sumData = [
+            { txt: "<b style='color:var(--primary);'>Save:</b> Build your own arsenal of Master Prompts." },
+            { txt: "<b style='color:var(--gold);'>Verify:</b> Be the Editor, not just the reader. Catch the hallucinations." },
+            { txt: "<b style='color:var(--whatsapp);'>Protect:</b> Keep client and company secrets safe. <br><b style='color:var(--text-main);'>You are now ready for the AI-Powered Workplace!</b>" }
+        ];
+
+        // SLIDE MANAGER
+        function updateSlides() {
+            slides.forEach((slide, index) => { 
+                if (index === currentSlide) slide.classList.add('active'); 
+                else slide.classList.remove('active'); 
+            });
+
+            if (currentSlide === 1) { 
+                libStep = -1; isAnimating = false; 
+                document.getElementById('lib-1').classList.remove('active-item');
+                document.getElementById('lib-2').classList.remove('active-item');
+                document.getElementById('lib-ws').classList.remove('active-ws');
+                document.getElementById('ws-text').classList.remove('show');
+                document.getElementById('ws-text').innerHTML = "";
+                document.getElementById('lib-desc').innerHTML = "Click to load a saved prompt from the library..."; 
+            }
+            
+            if (currentSlide === 2) { 
+                verStep = -1; isAnimating = false; 
+                document.getElementById('v-scan').classList.remove('scan');
+                document.getElementById('v-fact').className = 'ver-fact';
+                document.getElementById('v-fact').innerHTML = "Sydney, which is the capital city of Australia.";
+                document.getElementById('v-badge').className = 'ver-badge';
+                document.getElementById('v-badge').innerHTML = "🚨 FACT CHECK ALERT";
+                document.getElementById('ver-desc').innerHTML = "Click to run the Verification Scanner on the AI's output..."; 
+            }
+
+            if (currentSlide === 3) { 
+                safeStep = -1; isAnimating = false; 
+                document.getElementById('s-packet').className = 'safe-packet';
+                document.getElementById('s-packet').innerHTML = "Prompt: User pass is 'Admin@123'";
+                document.getElementById('node-fw').classList.remove('active-fw');
+                document.getElementById('safe-desc').innerHTML = "Click to send a prompt containing sensitive data..."; 
+            }
+
+            if (currentSlide === 4) { 
+                sumStep = -1; isAnimating = false; 
+                document.getElementById('chk-1').classList.remove('show');
+                document.getElementById('chk-2').classList.remove('show');
+                document.getElementById('chk-3').classList.remove('show');
+                document.getElementById('sum-desc').innerHTML = "Click to reveal the final workflow pillars..."; 
+            }
+        }
+
+        // ANIMATION FUNCTIONS
+        async function runLibStep() { 
+            if (isAnimating) return; isAnimating = true; libStep++; 
+            const desc = document.getElementById('lib-desc'); 
+            const ws = document.getElementById('lib-ws');
+            const wsText = document.getElementById('ws-text');
+
+            if (libStep === 0) { 
+                document.getElementById('lib-1').classList.add('active-item');
+                ws.classList.add('active-ws');
+                wsText.innerHTML = "<span style='color:var(--primary); font-weight:800;'>[TASK]</span><br>Act as a Senior PR Manager. Reply to the following angry email.<br><br><span style='color:var(--gold); font-weight:800;'>[CONTEXT]</span><br>The customer is upset about a late delivery.<br><br><span style='color:var(--accent); font-weight:800;'>[CONSTRAINTS]</span><br>Do not apologize more than once. Keep it professional.<br><br><b>Email Text:</b> [PASTE EMAIL HERE]";
+                wsText.classList.add('show');
+            } else if (libStep === 1) { 
+                document.getElementById('lib-1').classList.remove('active-item');
+                wsText.classList.remove('show');
+                await sleepGlobal(400);
+                document.getElementById('lib-2').classList.add('active-item');
+                wsText.innerHTML = "<span style='color:var(--primary); font-weight:800;'>[TASK]</span><br>Act as a Senior Developer. Find the error in this code.<br><br><span style='color:var(--gold); font-weight:800;'>[CONTEXT]</span><br>This is a beginner's assignment.<br><br><span style='color:var(--whatsapp); font-weight:800;'>[FORMAT]</span><br>Give a 1-sentence explanation, then provide the corrected code.<br><br><b>Code:</b> [PASTE CODE HERE]";
+                wsText.classList.add('show');
+            } 
+            desc.style.opacity = 0; 
+            setTimeout(() => { desc.innerHTML = libData[libStep].txt; desc.style.opacity = 1; isAnimating = false; }, 300); 
+        }
+
+        async function runVerStep() { 
+            if (isAnimating) return; isAnimating = true; verStep++; 
+            const desc = document.getElementById('ver-desc'); 
+
+            if (verStep === 0) { 
+                document.getElementById('v-scan').classList.add('scan');
+                await sleepGlobal(1200);
+                document.getElementById('v-fact').classList.add('fake');
+                document.getElementById('v-badge').classList.add('show');
+            } else if (verStep === 1) { 
+                document.getElementById('v-fact').classList.remove('fake');
+                document.getElementById('v-fact').innerHTML = "Canberra, not Sydney, is the capital of Australia.";
+                document.getElementById('v-fact').classList.add('verified');
+                document.getElementById('v-badge').innerHTML = "✅ VERIFIED & CORRECTED";
+                document.getElementById('v-badge').classList.add('safe');
+            } 
+            desc.style.opacity = 0; 
+            setTimeout(() => { desc.innerHTML = verData[verStep].txt; desc.style.opacity = 1; isAnimating = false; }, 300); 
+        }
+
+        async function runSafeStep() { 
+            if (isAnimating) return; isAnimating = true; safeStep++; 
+            const desc = document.getElementById('safe-desc'); 
+
+            if (safeStep === 0) { 
+                const pkt = document.getElementById('s-packet');
+                pkt.classList.add('move-1');
+                await sleepGlobal(1500);
+                document.getElementById('node-fw').classList.add('active-fw');
+                await sleepGlobal(500);
+                pkt.innerHTML = "Prompt: User pass is '[REDACTED]'";
+                pkt.classList.add('anonymized');
+            } else if (safeStep === 1) { 
+                document.getElementById('node-fw').classList.remove('active-fw');
+                const pkt = document.getElementById('s-packet');
+                pkt.classList.add('move-2');
+            } 
+            desc.style.opacity = 0; 
+            setTimeout(() => { desc.innerHTML = safeData[safeStep].txt; desc.style.opacity = 1; isAnimating = false; }, 300); 
+        }
+
+        async function runSumStep() {
+            if (isAnimating) return; isAnimating = true; sumStep++; 
+            const desc = document.getElementById('sum-desc');
+
+            if (sumStep === 0) { document.getElementById('chk-1').classList.add('show'); } 
+            else if (sumStep === 1) { document.getElementById('chk-2').classList.add('show'); } 
+            else if (sumStep === 2) { document.getElementById('chk-3').classList.add('show'); }
+
+            desc.style.opacity = 0; 
+            setTimeout(() => { desc.innerHTML = sumData[sumStep].txt; desc.style.opacity = 1; isAnimating = false; }, 300); 
+        }
+
+        // NAVIGATION CONTROLLER
+        function nextSlide() {
+            if (isAnimating) return;
+            if (currentSlide === 1 && libStep < libData.length - 1) { runLibStep(); return; }
+            if (currentSlide === 2 && verStep < verData.length - 1) { runVerStep(); return; }
+            if (currentSlide === 3 && safeStep < safeData.length - 1) { runSafeStep(); return; }
+            if (currentSlide === 4 && sumStep < sumData.length - 1) { runSumStep(); return; }
+
+            if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
+        }
+
+        function prevSlide() { 
+            if (isAnimating) return;
+            if (currentSlide > 0) { currentSlide--; updateSlides(); } 
+        }
+
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide(); 
+            else if (e.key === 'ArrowLeft') prevSlide(); 
+        });
+        
+        // Initialize
+        updateSlides();
+    </script>
+</body>
+</html>
